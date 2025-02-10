@@ -1,0 +1,20 @@
+{
+  "name": "ai-topic-modeller",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "ts-node-dev --respawn --clear --env-file .env --transpile-only src/main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.1.9",
+    "ai": "^4.1.32"
+  }
+}
