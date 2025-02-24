@@ -22,12 +22,15 @@ const main = async () => {
       rl.prompt();
       const input = await new Promise<string>((res) => rl.once('line', res));
       const { topics } = await Utils.openAi.modelTopicsWithGpt({ feedback: input, sysPrompt: systemPrompt });
-      const embedding = await Utils.openAi.generateTextEmbeddings(input);
+      const embedding = await Utils.openAi.generateTextEmbeddings(JSON.stringify(topics));
       const result = await feedbackRepo.saveFeedback({ itemText: input, topics, embedding });
+      if (!result.success) {
+        console.error('Error saving feedback:', result.error.message);
+        continue;
+      }
 
-      result.success
-        ? console.log(`Feedback saved with ID: ${result.data.feedbackId}`)
-        : console.error('Error saving feedback:', result.error.message);
+      const similarFeedback = await feedbackRepo.findSimilarFeedback(result.data.feedbackId, embedding);
+      console.log('Similar feedback:', JSON.stringify(similarFeedback, null, 2));
     }
   } catch (error) {
     if (error instanceof Error && error.message !== 'stdin stream closed') console.error('Error:', error);

@@ -27,3 +27,5 @@ export type Result<T> =
       data?: never;
       error: Error;
     };
+
+export type AsyncResult<T> = Promise<Result<T>>;
