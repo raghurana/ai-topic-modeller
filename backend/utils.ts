@@ -17,6 +17,18 @@ export const Utils = {
       });
       return topics;
     },
+    summariseTopics: async (input: { topics: string[]; model?: string; sysPrompt: string }) => {
+      const { topics, model = 'gpt-4o-mini', sysPrompt } = input;
+      const { object: summary } = await generateObject({
+        model: openai(model, { structuredOutputs: true }),
+        system: sysPrompt,
+        prompt: topics.join('\n'),
+        schemaName: 'summary',
+        schemaDescription: 'A summary of the topics.',
+        schema: z.object({ summary: z.string() }),
+      });
+      return summary;
+    },
     generateTextEmbeddings: async (text: string) => {
       const { embedding } = await embed({
         model: openai.embedding('text-embedding-3-small'),

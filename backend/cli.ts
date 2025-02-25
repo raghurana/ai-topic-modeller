@@ -51,11 +51,24 @@ const main = async () => {
         continue;
       }
 
-      console.log('Similar feedback found. Clustering feedback...');
-      const similarFeedbackIds = similarFeedback.data.map((f) => f.feedbackId);
+      console.log('Similar feedback found. Extracting common topics...');
+      const { similarFeedbackIds, similarTopics } = similarFeedback.data.reduce(
+        (acc, f) => {
+          acc.similarFeedbackIds.push(f.feedbackId);
+          acc.similarTopics.push(...f.topics);
+          return acc;
+        },
+        { similarFeedbackIds: [] as number[], similarTopics: [] as string[] },
+      );
+
+      console.log('Summarising topics...');
+      const summaryResponse = await Utils.openAi.summariseTopics({ topics: similarTopics, sysPrompt: systemPrompt });
+      console.log('Topics summarised.');
+
+      console.log('Clustering feedback...');
       const clusteriseResult = await feedbackRepo.clusteriseFeedback([currentFeedbackId, ...similarFeedbackIds], {
         clusterId: ulid(),
-        clusterTitle: `Cluster ${Date.now()}`,
+        clusterTitle: summaryResponse.summary,
       });
 
       if (!clusteriseResult.success) {
@@ -64,6 +77,7 @@ const main = async () => {
       }
 
       console.log('Clustered feedback count:', clusteriseResult.data.updatedCount);
+      console.log('--------------------------------');
     }
   } catch (error) {
     if (error instanceof Error && error.message !== 'stdin stream closed') console.error('Error:', error);
