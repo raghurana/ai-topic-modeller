@@ -22,14 +22,23 @@ const main = async () => {
     while (true) {
       rl.prompt();
       const input = await new Promise<string>((res) => rl.once('line', res));
+
+      console.log('Doing topic modelling for input...');
       const { topics } = await Utils.openAi.modelTopicsWithGpt({ feedback: input, sysPrompt: systemPrompt });
+      console.log('Topic modelling done.');
+
+      console.log('Generating embedding for input...');
       const embedding = await Utils.openAi.generateTextEmbeddings(JSON.stringify(topics));
+      console.log('Embedding generated.');
+
+      console.log('Saving feedback...');
       const result = await feedbackRepo.addNewFeedback({ itemText: input, topics, embedding });
       if (!result.success) {
         console.error('Error saving feedback:', result.error.message);
         continue;
       }
 
+      console.log('Feedback saved. Finding similar feedback...');
       const currentFeedbackId = result.data.feedbackId;
       const similarFeedback = await feedbackRepo.findSimilarFeedback(currentFeedbackId, embedding);
       if (!similarFeedback.success) {
@@ -37,9 +46,14 @@ const main = async () => {
         continue;
       }
 
+      if (!similarFeedback.data.length) {
+        console.warn('No similar feedback found. Skipping clustering.');
+        continue;
+      }
+
+      console.log('Similar feedback found. Clustering feedback...');
       const similarFeedbackIds = similarFeedback.data.map((f) => f.feedbackId);
-      similarFeedbackIds.push(currentFeedbackId);
-      const clusteriseResult = await feedbackRepo.clusteriseFeedback(similarFeedbackIds, {
+      const clusteriseResult = await feedbackRepo.clusteriseFeedback([currentFeedbackId, ...similarFeedbackIds], {
         clusterId: ulid(),
         clusterTitle: `Cluster ${Date.now()}`,
       });

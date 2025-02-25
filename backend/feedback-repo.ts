@@ -54,7 +54,6 @@ export class FeedbackRepo {
       const idPlaceholders = feedbackIds.map((_, idx) => `$${idx + 3}`).join(',');
       const query = `UPDATE feedback_items SET cluster_id = $1, cluster_title = $2, last_update_date = CURRENT_TIMESTAMP WHERE id IN (${idPlaceholders}) RETURNING id`;
       const values = [updates.clusterId, updates.clusterTitle, ...feedbackIds];
-      console.log(query, values);
       const result = await this.connectedClient.query(query, values);
 
       return {
