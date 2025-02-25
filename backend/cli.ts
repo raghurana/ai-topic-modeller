@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises';
 import { Client } from 'pg';
 import { FeedbackRepo } from './feedback-repo';
 import { Utils } from './utils';
+import { ulid } from 'ulid';
 
 const main = async () => {
   const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
@@ -23,14 +24,32 @@ const main = async () => {
       const input = await new Promise<string>((res) => rl.once('line', res));
       const { topics } = await Utils.openAi.modelTopicsWithGpt({ feedback: input, sysPrompt: systemPrompt });
       const embedding = await Utils.openAi.generateTextEmbeddings(JSON.stringify(topics));
-      const result = await feedbackRepo.saveFeedback({ itemText: input, topics, embedding });
+      const result = await feedbackRepo.addNewFeedback({ itemText: input, topics, embedding });
       if (!result.success) {
         console.error('Error saving feedback:', result.error.message);
         continue;
       }
 
       const similarFeedback = await feedbackRepo.findSimilarFeedback(result.data.feedbackId, embedding);
-      console.log('Similar feedback:', JSON.stringify(similarFeedback, null, 2));
+      if (!similarFeedback.success) {
+        console.error('Error finding similar feedback:', similarFeedback.error.message);
+        continue;
+      }
+
+      console.log('Similar feedback:', JSON.stringify(similarFeedback.data, null, 2));
+      const similarFeedbackIds = similarFeedback.data.map((f) => f.feedbackId);
+      console.log('Similar feedback IDs:', similarFeedbackIds);
+      const clusteriseResult = await feedbackRepo.clusteriseFeedback(similarFeedbackIds, {
+        clusterId: ulid(),
+        clusterTitle: `Cluster ${Date.now()}`,
+      });
+
+      if (!clusteriseResult.success) {
+        console.error('Error clustering feedback:', clusteriseResult.error.message);
+        continue;
+      }
+
+      console.log('Feedback clustered count:', clusteriseResult.data.updatedCount);
     }
   } catch (error) {
     if (error instanceof Error && error.message !== 'stdin stream closed') console.error('Error:', error);
