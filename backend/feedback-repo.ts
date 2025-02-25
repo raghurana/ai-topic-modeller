@@ -31,11 +31,12 @@ export class FeedbackRepo {
       );
       return {
         success: true,
-        data: result.rows.map((r) => ({
-          feedbackId: r.id,
-          topics: r.topics,
-          cosineDistance: r.cosine_distance,
-        })),
+        data:
+          result.rows?.map((r) => ({
+            feedbackId: r.id,
+            topics: r.topics,
+            cosineDistance: r.cosine_distance,
+          })) ?? [],
       };
     } catch (e) {
       const ex = e instanceof Error ? e : new Error(String(e));

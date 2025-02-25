@@ -30,15 +30,15 @@ const main = async () => {
         continue;
       }
 
-      const similarFeedback = await feedbackRepo.findSimilarFeedback(result.data.feedbackId, embedding);
+      const currentFeedbackId = result.data.feedbackId;
+      const similarFeedback = await feedbackRepo.findSimilarFeedback(currentFeedbackId, embedding);
       if (!similarFeedback.success) {
         console.error('Error finding similar feedback:', similarFeedback.error.message);
         continue;
       }
 
-      console.log('Similar feedback:', JSON.stringify(similarFeedback.data, null, 2));
       const similarFeedbackIds = similarFeedback.data.map((f) => f.feedbackId);
-      console.log('Similar feedback IDs:', similarFeedbackIds);
+      similarFeedbackIds.push(currentFeedbackId);
       const clusteriseResult = await feedbackRepo.clusteriseFeedback(similarFeedbackIds, {
         clusterId: ulid(),
         clusterTitle: `Cluster ${Date.now()}`,
@@ -49,7 +49,7 @@ const main = async () => {
         continue;
       }
 
-      console.log('Feedback clustered count:', clusteriseResult.data.updatedCount);
+      console.log('Clustered feedback count:', clusteriseResult.data.updatedCount);
     }
   } catch (error) {
     if (error instanceof Error && error.message !== 'stdin stream closed') console.error('Error:', error);
