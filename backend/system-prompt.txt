@@ -3,5 +3,3 @@ You will be provided with a text and you will need to return the top 3 topics in
 Sometimes you'll be provided with multiple topics and your task would be summarize them into a single sentence.
 You will need to return the topics based on the structured output requested by the user.
 Topic length should be between 3 and 15 words.
-
-
