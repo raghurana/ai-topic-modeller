@@ -20,6 +20,7 @@
   "description": "",
   "devDependencies": {
     "@types/cors": "^2.8.17",
+    "@types/csv-parse": "^1.1.12",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.1",
     "@types/pg": "^8.11.11",
@@ -32,6 +33,7 @@
     "ai": "^4.1.32",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "csv-parse": "^5.6.0",
     "express": "^4.21.2",
     "pg": "^8.13.3",
     "react-json-tree": "^0.19.0",

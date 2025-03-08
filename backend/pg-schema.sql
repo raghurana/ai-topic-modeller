@@ -1,17 +1,11 @@
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
-CREATE TABLE feedback_items (
-    id SERIAL PRIMARY KEY,
-    item_text TEXT,
-    topics TEXT[],
-    embedding vector(1536), -- vector data
-    cluster_id TEXT NULL, -- ULID provided from repo code, optional
-    cluster_title TEXT NULL, -- optional
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE TOPIC (
+    id CHAR(26) PRIMARY KEY,
+    group_id INTEGER NULL,
+    topic_text TEXT NOT NULL,
+    embedding vector(1536) NOT NULL -- vector data
 );
 
--- Create an index for semantic search on the embedding column
-CREATE INDEX ON feedback_items USING hnsw (embedding vector_cosine_ops);
-
+CREATE INDEX ON topic USING hnsw (embedding vector_cosine_ops);

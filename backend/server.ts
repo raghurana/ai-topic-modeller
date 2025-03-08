@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { json } from 'body-parser';
-import { FeedbackRepo } from './feedback-repo';
+import { FeedbackRepo } from './repos/feedback-repo';
 import { Client } from 'pg';
 
 const app = express();

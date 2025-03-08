@@ -1,3 +1,10 @@
+export type Topic = {
+  id: string;
+  topicText: string;
+  embedding: number[];
+  groupId?: string;
+};
+
 export type TopicModel = {
   topics: string[];
 };

@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { Feedback, FeedbackCluster, Result, AsyncResult } from './types';
+import { Feedback, FeedbackCluster, Result, AsyncResult } from '../types';
 
 export class FeedbackRepo {
   constructor(private readonly connectedClient: Client) {}
