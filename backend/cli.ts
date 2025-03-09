@@ -4,27 +4,16 @@ import { Utils } from './utils';
 import { ulid } from 'ulid';
 import { TopicRepo } from './repos/topic-repo';
 
-const main = async () => {
-  const pgClient = Utils.pg.newClient();
-  const topicRepo = new TopicRepo(pgClient);
-  const systemPrompt = await readFile(join(__dirname, 'system-prompt.txt'), 'utf-8');
+const pgClient = Utils.pg.newClient();
+const topicRepo = new TopicRepo(pgClient);
 
+const main = async () => {
+  const systemPrompt = await readFile(join(__dirname, 'system-prompt.txt'), 'utf-8');
   await pgClient.connect();
 
   try {
-    const csvData1 = await Utils.csv.read<{ topics: string }>(join(__dirname, 'topics', '1.csv'));
-    const topics1 = csvData1.map((i) => i.topics);
-    console.log(topics1);
-
-    const topics1WithEmbeddings = await Utils.openAi.generateTextEmbeddings(topics1);
-    const dbTopics1 = topics1WithEmbeddings.map((t) => ({
-      id: ulid(),
-      topicText: t.value,
-      embedding: t.embedding,
-    }));
-
-    const result = await topicRepo.addNewTopics(dbTopics1);
-    console.log(result);
+    const testCsvFiles = ['1.csv'];
+    for await (const result of readAndSaveCsvTopicsWithEmbeddings(testCsvFiles)) console.log(result);
 
     // console.log('Doing topic modelling for input...');
     // const { topics } = await Utils.openAi.modelTopicsWithGpt({ feedback: input, sysPrompt: systemPrompt });
@@ -80,8 +69,27 @@ const main = async () => {
   } catch (error) {
     if (error instanceof Error && error.message !== 'stdin stream closed') console.error('Error:', error);
   } finally {
-    //rl.close();
     await pgClient.end();
+  }
+};
+
+const readAndSaveCsvTopicsWithEmbeddings = async function* (
+  csvFileNames: string[],
+): AsyncGenerator<{ fileName: string; savedCount: number }> {
+  for (const csvFileName of csvFileNames) {
+    const csvData = await Utils.csv.read<{ topics: string }>(join(__dirname, 'topics', csvFileName));
+    const topics = csvData.map((i) => i.topics);
+
+    const topicsWithEmbeddings = await Utils.openAi.generateTextEmbeddings(topics);
+    const result = await topicRepo.addNewTopics(
+      topicsWithEmbeddings.map((t) => ({
+        id: ulid(),
+        topicText: t.value,
+        embedding: t.embedding,
+      })),
+    );
+
+    yield { fileName: csvFileName, savedCount: result.success ? result.data : 0 };
   }
 };
 
