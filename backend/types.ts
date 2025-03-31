@@ -1,28 +1,3 @@
-export type Topic = {
-  id: string;
-  topicText: string;
-  embedding: number[];
-  groupId?: string;
-};
-
-export type TopicModel = {
-  topics: string[];
-};
-
-export type Feedback = {
-  itemText: string;
-  topics: string[];
-  embedding: number[];
-};
-
-export type FeedbackCluster = {
-  id: number;
-  title: string;
-  feedbackTexts: string[];
-  createDate: Date;
-  updateDate: Date;
-};
-
 export type Result<T> =
   | {
       success: true;
@@ -36,3 +11,24 @@ export type Result<T> =
     };
 
 export type AsyncResult<T> = Promise<Result<T>>;
+
+export type Topic = {
+  id: number;
+  topicText: string;
+  embedding: number[];
+};
+
+export type MergedTopic = {
+  id: number;
+  topicText: string;
+  centroidEmbedding: number[];
+};
+
+export type TopicMerge = {
+  individualTopicId: number;
+  mergedTopicId: number;
+};
+
+export type UnsavedTopic = Omit<Topic, 'id'>;
+
+export type UnsavedMergedTopic = Omit<MergedTopic, 'id'>;

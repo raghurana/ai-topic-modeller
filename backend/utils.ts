@@ -1,25 +1,12 @@
 import { z } from 'zod';
 import { generateObject, embed, embedMany } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { TopicModel } from './types';
 import { Client } from 'pg';
 import { parse } from 'csv-parse/sync';
 import { readFile } from 'fs/promises';
 
 export const Utils = {
   openAi: {
-    modelTopicsWithGpt: async (input: { feedback: string; model?: string; sysPrompt: string }): Promise<TopicModel> => {
-      const { feedback, model = 'gpt-4o-mini', sysPrompt } = input;
-      const { object: topics } = await generateObject({
-        model: openai(model, { structuredOutputs: true }),
-        system: sysPrompt,
-        prompt: feedback,
-        schemaName: 'topics',
-        schemaDescription: 'The top 3 topics in the text.',
-        schema: z.object({ topics: z.array(z.string()) }),
-      });
-      return topics;
-    },
     summariseTopics: async (input: { topics: string[]; model?: string; sysPrompt: string }) => {
       const { topics, model = 'gpt-4o-mini', sysPrompt } = input;
       const { object: summary } = await generateObject({
