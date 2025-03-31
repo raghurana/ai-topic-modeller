@@ -11,17 +11,13 @@ export class TopicsProcessor {
   }
 
   async saveTopicsFromCsv(csvFileName: string): AsyncResult<number> {
-    const csvData = await Utils.csv.read<{ topics: string }>(csvFileName);
-    const topics = csvData.map((i) => i.topics);
-
-    const topicsWithEmbeddings = await Utils.openAi.generateTextEmbeddings(topics);
-    const result = await this.topicRepo.insertNewTopics(
+    const csvData = await Utils.csv.read<{ topic: string }>(csvFileName);
+    const topicsWithEmbeddings = await Utils.openAi.generateTextEmbeddings(csvData.map((row) => row.topic));
+    return this.topicRepo.insertNewTopics(
       topicsWithEmbeddings.map((t) => ({
         topicText: t.value,
         embedding: t.embedding,
       })),
     );
-
-    return result;
   }
 }
