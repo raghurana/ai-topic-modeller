@@ -42,6 +42,7 @@ export const Utils = {
   },
   pg: {
     newClient: () => new Client({ connectionString: process.env.DATABASE_URL }),
+    toPgVector: (embedding: number[]): string => `[${embedding.join(',')}]`,
   },
   csv: {
     read: async <T>(csvFilePath: string): Promise<T[]> => {
